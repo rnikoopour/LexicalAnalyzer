@@ -1,5 +1,6 @@
 import transition
 import re
+from token import Token
 
 class DFSM(object):
     def __init__(self, states, alphabet, trans_funcs, start_state, accept_states):
@@ -37,3 +38,8 @@ class IdentifierDFSM(DFSM):
         input = re.sub(r'[a-zA-Z]', 'l', input)
         input = re.sub(r'[0-9]', 'd', input)
         return super(IdentifierDFSM, self).Accepts(input)
+
+class NumeralDFSM(DFSM):
+    def Accepts(self, input):
+        input = re.sub(r'[0-9]', 'd', input)
+        return super(NumeralDFSM, self).Accepts(input)
