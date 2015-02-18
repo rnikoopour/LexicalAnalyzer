@@ -18,6 +18,7 @@ class DFSM(object):
         accepts = True
         for symbol in input:
             if symbol not in self.alphabet:
+                print symbol + '-- is not in --' +self.alphabet
                 accepts = False
         return accepts
 
@@ -36,6 +37,9 @@ class DFSM(object):
             self.Transition(symbol)
         return True if self.current_state in self.accept_states else False
 
+    def GetCurrentState(self):
+        return self.current_state
+    
     def GetToken(self, lexeme):
         return Token('Unknown', lexeme)
     
@@ -60,3 +64,13 @@ class NumeralDFSM(DFSM):
     def Accepts(self, input):
         input = re.sub(r'[0-9]', 'd', input)
         return super(NumeralDFSM, self).Accepts(input)
+
+    def GetToken(self, lexeme):
+        token = super(NumeralDFSM, self).GetToken(lexeme)
+        input = re.sub(r'[0-9]', 'd', lexeme)
+        self.IsInAcceptingState(input)
+        if self.GetCurrentState() is 2:
+            token.type = 'Integer'
+        elif self.GetCurrentState() is 3:
+            token.type = 'Real'
+        return token
