@@ -1,1 +1,22 @@
-while (fahr < upper) a:=23.00 112313 234.2.342.1.2.34
+function convert [fahr:int]
+{
+	return 5*(fahr -32)/9;
+}
+
+@@
+     int    low, high, step;   /* declarations */
+
+ @@
+     read(low, high, step);
+     while (low < high)  
+         {  write (low);
+             write (convert [low]);
+             low := low + step;
+	     }
+	 5.432
+	 12.1.231
+	 .123
+	 id_test__
+	 asd_123
+	 _asd
+	 ______

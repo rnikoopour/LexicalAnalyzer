@@ -1,80 +1,64 @@
-from dfsm import IdentifierDFSM, NumeralDFSM
-from transition import Transition
-import token
-import string
+from dfsm import GetIdentifierDFSM, GetNumeralDFSM, GetOperatorSeparatorDFSM
 import re
-id_dfsm = None
-numeral_dfsm = None
 
-def GetIdentifierDFSM():
-    global id_dfsm
-    if id_dfsm is None:
-        states = [1, 2, 3]
-        input_symbols = 'ld_'
-        transitions = [Transition(1, 'l', 2), Transition(2, 'l', 2), Transition(2, 'd', 2), Transition(2, '_', 3), Transition(3, 'l', 2), Transition(3, 'd', 2), Transition(3, '_', 3)]
-        start_state = states[0]
-        accept_states = [states[1]]
-        id_dfsm = IdentifierDFSM(states, input_symbols, transitions, start_state, accept_states)
-    return id_dfsm
-
-def GetNumeralDFSM():
-    global numeral_dfsm
-    if numeral_dfsm is None:
-        states = [1, 2, 3, 4]
-        input_symbols = 'd.'
-        transitions = [Transition(1, 'd', 2), Transition(2, 'd', 2), Transition(2, '.', 3), Transition(3, 'd', 3), Transition(3, '.', 4), Transition(4, 'd', 4), Transition(4, '.', 4)]
-        start_state = states[0]
-        accept_states = [states[1], states[2]]
-        numeral_dfsm = NumeralDFSM(states, input_symbols, transitions, start_state, accept_states)
-    return numeral_dfsm
-
+def PeekFile(file):
+    peek = file.read(1)
+    file.seek(-1, 1)
+    return peek
 
 def main():
-    file = open('rat_example.rat', 'r')
-    identifier_dfsm = GetIdentifierDFSM()
+    source_code = open('rat_example.rat', 'r')
+
     tokens = []
-    char = file.read(1)
+    char = source_code.read(1)
     end_of_file = True if char == '' else False
     
     while not end_of_file:
-        print 'char is --' + char
-        if char.isalpha():
+        # Choose DFSM based on what char is
+        # Let IDDFSM handle anything that starts with '_'
+        if char.isalpha() or char == '_':
             dfsm = GetIdentifierDFSM()
-        elif char.isdigit():
-            print char
+        # Let NumeralDFSM handle anything that starts with '.'
+        elif char.isdigit() or char == '.':
             dfsm = GetNumeralDFSM()
         else:
-            char = file.read(1)
-            # Need continue so we can get the right dfsm.
-            #  We will replace this continue with getting a
-            #  DFSM for separator/operator
-            continue
+            dfsm = GetOperatorSeparatorDFSM()
 
-        print 'Actual char is --' + char
+        # Start building lexeme
         lexeme = char
+
+        dfsm.Reset()
         
-        while dfsm.Accepts(lexeme):
-            char = file.read(1)
-            print char
-            # file.read return an empty string if EOF is reached
+        # If Transition returns -1 its an epsilon transition
+        #  we need to stop taking in characters and process the lexeme
+        while dfsm.Transition(char) is not -1:
+            # .read() return an empty string if EOF is reached
+            char = source_code.read(1)
+            # Check to see if EOF is reached to set end_of_file properly
+            #  This prevents us from losing the last letter of the file
             if char == '':
                 end_of_file = True
-                break
             lexeme += char
-            
+
+        # Only unget char if we aren't at EOF
         if not end_of_file:
+            # This "ungets" the last character
             char = lexeme[-1]
             lexeme = lexeme[:-1]
-            tokens.append(dfsm.GetToken(lexeme))
-        else:
-            tokens.append(dfsm.GetToken(lexeme))
-        
-        # If char is a whitespace char we need to read in the next character
-        if re.match(r'\s', char):
-            char = file.read(1)
             
-    for token in tokens:
+        # Strips any whitespace we encounter
+        while re.match(r'[\s]', char): 
+            char = source_code.read(1)
+
+        # IF peeking at the next character returns an
+        # empty string we have reached EOF 
+        if PeekFile(source_code) == '':
+            end_of_file = True
+
+        tokens.append((dfsm.GetToken(lexeme), dfsm))
+
+    for token, dfsm in tokens:
         print token.type + ' -- ' + token.lexeme
-    
+     
 if __name__ == '__main__':
     main()
