@@ -1,3 +1,7 @@
+## @package dfsm
+#  This handles the description and creation of DFSMs
+#
+#  It includes an IdentifierDFSM, a NumeralDFSM, and an OperatorSeparatorDFSM
 from transition import Transition
 import re
 from token import Token
@@ -6,6 +10,10 @@ id_dfsm = None
 numeral_dfsm = None
 operator_separator_dfsm = None
 
+##
+# @brief Returns IdentifierDFSM
+#
+# @return 
 def GetIdentifierDFSM():
     global id_dfsm
     if id_dfsm is None:
@@ -15,6 +23,7 @@ def GetIdentifierDFSM():
         start_state = states[0]
         accept_states = [states[1]]
         id_dfsm = IdentifierDFSM(states, input_symbols, transitions, start_state, accept_states)
+    id_dfsm.Reset()
     return id_dfsm
 
 def GetNumeralDFSM():
@@ -26,6 +35,7 @@ def GetNumeralDFSM():
         start_state = states[0]
         accept_states = [states[1], states[2]]
         numeral_dfsm = NumeralDFSM(states, input_symbols, transitions, start_state, accept_states)
+    numeral_dfsm.Reset()
     return numeral_dfsm
 
 def GetOperatorSeparatorDFSM():
@@ -37,6 +47,7 @@ def GetOperatorSeparatorDFSM():
         start_state = states[0]
         accept_states = [states[2], states[3], states[4], states[5], states[7], states[8]]
         operator_separator_dfsm = OperatorSeparatorDFSM(states, input_symbols, transitions, start_state, accept_states)
+    operator_separator_dfsm.Reset()
     return operator_separator_dfsm
 
 class DFSM(object):
@@ -70,6 +81,11 @@ class DFSM(object):
 
     def GetToken(self, lexeme):
         return Token('Unknown', lexeme)
+################################################################################
+#
+# END OF CLASS: DFSM
+#
+################################################################################
     
 class IdentifierDFSM(DFSM):
     def Transition(self, input):

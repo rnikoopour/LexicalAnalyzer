@@ -26,8 +26,6 @@ def main():
 
         # Start building lexeme
         lexeme = char
-
-        dfsm.Reset()
         
         # If Transition returns -1 its an epsilon transition
         #  we need to stop taking in characters and process the lexeme
