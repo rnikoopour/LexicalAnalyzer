@@ -28,6 +28,7 @@ def main():
         # Let NumeralDFSM handle anything that starts with '.'
         elif char.isdigit() or char == '.':
             dfsm = GetNumeralDFSM()
+        # The OperatorSeparatorDFSM handles everything else
         else:
             dfsm = GetOperatorSeparatorDFSM()
                 
@@ -36,22 +37,21 @@ def main():
         # If Transition returns -1 its an epsilon transition
         #  we need to stop taking in characters and process the lexeme
         while dfsm.Transition(char) is not -1:
-            # .read() return an empty string if EOF is reached
             char = source_code.read(1)
             # Check to see if EOF is reached to set end_of_file properly
             #  This prevents us from losing the last letter of the file
             if char == '':
                 end_of_file = True
             lexeme += char
-
                         
-        # Only unget char if we aren't at EOF
         if not end_of_file:
+            # This "ungets" the last char.
             if len(lexeme) > 1:
-                # This "ungets" the last character
                 char = lexeme[-1]
                 lexeme = lexeme[:-1]
             # If len(lexeme) is 1 we need to read the next char in the file
+            #  We do this because if the len of lexeme is 1 we haven't read
+            #  from the file to update char
             else:
                 char = source_code.read(1)
 
