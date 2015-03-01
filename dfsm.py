@@ -60,11 +60,11 @@ def GetOperatorSeparatorDFSM():
     """
     global operator_separator_dfsm
     if operator_separator_dfsm is None:
-        states = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
         input_symbols = '@[],:{}=;()!><+-*/'
-        transitions = [Transition(1, '@', 2), Transition(2, '@', 3), Transition(1, '[', 3), Transition(1, ']', 3), Transition(1,',', 3), Transition(1, ':', 4), Transition(1, '{', 3), Transition(1, '}', 3), Transition(1, '=', 6), Transition(4, '=', 5), Transition(7, '=', 8), Transition(9, '=', 8), Transition(1, ';', 3), Transition(1, '(', 3), Transition(1, ')', 3), Transition(1, '!', 7), Transition(1, '>', 8), Transition(6, '>', 8), Transition(1, '<', 9), Transition(1, '+', 5), Transition(1, '-', 5), Transition(1, '*', 5), Transition(1, '/', 5)]
+        transitions = [Transition(1, '@', 2), Transition(2, '@', 3), Transition(1, '[', 3), Transition(1, ']', 3), Transition(1,',', 3), Transition(1, ':', 4), Transition(1, '{', 3), Transition(1, '}', 3), Transition(1, '=', 6), Transition(4, '=', 5), Transition(7, '=', 8), Transition(9, '=', 8), Transition(1, ';', 3), Transition(1, '(', 3), Transition(1, ')', 3), Transition(1, '!', 7), Transition(1, '>', 8), Transition(6, '>', 8), Transition(1, '<', 9), Transition(1, '+', 5), Transition(1, '-', 5), Transition(1, '*', 5), Transition(1, '/', 10), Transition(10, '*', 11), Transition(11, 'c', 11), Transition(11, '*', 12), Transition(12, 'c', 11), Transition(12, '*', 12), Transition(12, '/', 13)]
         start_state = states[0]
-        accept_states = [states[2], states[3], states[4], states[5], states[7], states[8]]
+        accept_states = [states[2], states[3], states[4], states[5], states[7], states[8], states[10], states[12]]
         operator_separator_dfsm = OperatorSeparatorDFSM(states, input_symbols, transitions, start_state, accept_states)
     operator_separator_dfsm.Reset()
     return operator_separator_dfsm
@@ -208,6 +208,21 @@ class NumeralDFSM(DFSM):
         return type
 
 class OperatorSeparatorDFSM(DFSM):
+    def Transition(self, input):
+        """
+        @brief Updates current state based on the incoming symbol.
+
+        We have a special case with this DFSM to detect comments.  When we are in the commenting state (state 11), we need to change any incoming characters that are not '*' or '/' into 'c'.
+        @param[in] symbol A string 1 char long
+        @return Returns the current state of the machine.  Epsilon tranisitions are represented by a return value of -1
+        @post The DFSM's previous_state is updated to the current_state. The DFSM's current_state member is updated to the newest state. 
+        """
+        # 11, 12 are states where we we are reading characters of a comment and need to change the input accordingly
+        if self.current_state in [11, 12]:
+            input = re.sub(r'[^*/]', 'c', input)
+        return super(OperatorSeparatorDFSM, self).Transition(input)
+
+
     def IdentifyLexeme(self,lexeme):
         '''
         @brief Identifies the lexeme
@@ -223,5 +238,7 @@ class OperatorSeparatorDFSM(DFSM):
             type = 'Relop'
         elif self.previous_state is 5:
             type = 'Operator'
+        elif self.previous_state is 13:
+            type = 'Comment'
         return type
 
