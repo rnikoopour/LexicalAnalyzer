@@ -123,14 +123,24 @@ class DFSM(object):
         self.current_state = next_state
         return self.current_state
 
+    def IdentifyLexeme(self, lexeme):
+        '''
+        @brief Identifies the lexeme based on the DFSM's current state.  By default this should return 'Unknown'.
+        
+        @param[in] lexeme The lexeme to identify
+        @return Returns 'Unknown' by default'
+        '''
+        return 'Unknown'
+
     def GetToken(self, lexeme):
         '''
-        @brief Returns an unidentified token
+        @brief Returns a token with its type set by the DFSM
 
         @param[in] lexeme A string representing the token's lexeme
         @return Returns a Token object with the token type set to "Unknown"
         '''
-        return Token('Unknown', lexeme)
+        token_type = self.IdentifyLexeme(lexeme)
+        return Token(token_type, lexeme)
     
 class IdentifierDFSM(DFSM):
     """
@@ -150,19 +160,20 @@ class IdentifierDFSM(DFSM):
         input = re.sub(r'[0-9]', 'd', input)
         return super(IdentifierDFSM, self).Transition(input)
 
-    def GetToken(self, lexeme):
+    def IdentifyLexeme(self,lexeme):
         '''
-        @brief Returns a token identifying lexeme
+        @brief Identifies the lexeme
 
-        @param[in] lexeme A string representing the token's lexeme
-        @return Returns a Token object with the type set properly.  If lexeme is keyword, Token.type = 'keyword'.  If IdentifierDFSM.previous_state is an accepting state and lexeme is not a keyword, Token.type = 'identifier'.  If IdentifierDFSM is not in accepting state then Token.type = 'Unknown'.
+        @param[in] lexeme The lexeme to identify
+        @return Returns a string identifying the lexeme
         '''
-        token = super(IdentifierDFSM, self).GetToken(lexeme)
+        # We check previous state since current_state would be -1 meaning an epsilon transition
+        type = 'Unknown'
         if lexeme in keywords and self.previous_state in self.accept_states:
-            token.type = 'Keyword'
+            type = 'Keyword'
         elif self.previous_state in self.accept_states:
-            token.type = 'Identifier'
-        return token
+            type = 'Identifier'
+        return type
         
 class NumeralDFSM(DFSM):
     """
@@ -181,37 +192,36 @@ class NumeralDFSM(DFSM):
         input = re.sub(r'[0-9]', 'd', input)
         return super(NumeralDFSM, self).Transition(input)
 
-    def GetToken(self, lexeme):
-        """
-        @brief Returns a token identifying lexeme
+    def IdentifyLexeme(self,lexeme):
+        '''
+        @brief Identifies the lexeme
 
-        @param[in] lexeme A string representing the token's lexeme
-        @return Returns a Token object with the type set properly.  If NumeralDFSM.previous_state = 2, Token.type = 'Integer'. If NumeralDFSM.previous_state = 3, Token.type = 'Real' .  If NumeralDFSM is not in accepting state then lexeme is unidentified.
-        """
-        token = super(NumeralDFSM, self).GetToken(lexeme)
+        @param[in] lexeme The lexeme to identify
+        @return Returns a string identifying the lexeme
+        '''
+        # We check previous state since current_state would be -1 meaning an epsilon transition
+        type = 'Unknown'
         if self.previous_state is 2:
-            token.type = 'Integer'
+            type = 'Integer'
         elif self.previous_state is 3:
-            token.type = 'Real'
-        return token
+            type = 'Real'
+        return type
 
 class OperatorSeparatorDFSM(DFSM):
-    """
-    @brief DFSM that can identify Separators and Operators in the language
-    """
-    def GetToken(self, lexeme):
-        """
-        @brief Returns a token identifying lexeme
+    def IdentifyLexeme(self,lexeme):
+        '''
+        @brief Identifies the lexeme
 
-        @param[in] lexeme A string representing the token's lexeme
-        @return Returns a Token object with the type set properly.  If OperatorSeparatorDFSM.previous_state = 3 or 4, Token.type = 'Separator'.  If OperatorSeparatorDFSM.previous_state = 6, 8, or 9, Token.type = 'Relop'. If OperatorSeparatorDFSM.previous_state = 5, Token.type = 'Operator'.  If OperatorSeparatorDFSM is not in accepting state then lexeme is unidentified.
-        """
-        token = super(OperatorSeparatorDFSM, self).GetToken(lexeme)
+        @param[in] lexeme The lexeme to identify
+        @return Returns a string identifying the lexeme
+        '''
+        # We check previous state since current_state would be -1 meaning an epsilon transition
+        type = 'Unknown'
         if self.previous_state in [3, 4]:
-            token.type = 'Separator'
+            type = 'Separator'
         elif self.previous_state in [6, 8, 9]:
-            token.type = 'Relop'
+            type = 'Relop'
         elif self.previous_state is 5:
-            token.type = 'Operator'
-        return token
+            type = 'Operator'
+        return type
 
