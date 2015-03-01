@@ -4,7 +4,6 @@
 @section intro_sec Introduction
 This will become a Rat15S compiler.  Currently working on Lexical Analyzer
 '''
-
 from dfsm import GetIdentifierDFSM, GetNumeralDFSM, GetOperatorSeparatorDFSM
 import re
 import sys
@@ -60,12 +59,14 @@ def main():
         while re.match(r'[\s]', char): 
             char = source_code.read(1)
 
+        # We need to check if after stripping whitespaces we've reached EOF
         if char == '':
             end_of_file = True
 
-        # If peeking at the next character returns an
-        # empty string we have reached EOF             
-        tokens.append(dfsm.GetToken(lexeme))
+        # We don't want to add comments to the token list
+        token = dfsm.GetToken(lexeme)
+        if token.type is not 'Comment':
+            tokens.append(token)
 
     output_file = open(sys.argv[2], 'w')
     output_file.write('token -- lexeme\n')
