@@ -1,5 +1,13 @@
+'''
+@mainpage Rat15S Compiler
+
+@section intro_sec Introduction
+This will become a Rat15S compiler.  Currently working on Lexical Analyzer
+'''
+
 from dfsm import GetIdentifierDFSM, GetNumeralDFSM, GetOperatorSeparatorDFSM
 import re
+import sys
 
 def PeekFile(file):
     peek = file.read(1)
@@ -7,7 +15,7 @@ def PeekFile(file):
     return peek
 
 def main():
-    source_code = open('rat_example.rat', 'r')
+    source_code = open(sys.argv[1], 'r')
 
     tokens = []
     char = source_code.read(1)
@@ -23,10 +31,9 @@ def main():
             dfsm = GetNumeralDFSM()
         else:
             dfsm = GetOperatorSeparatorDFSM()
-
+                
         # Start building lexeme
         lexeme = char
-        
         # If Transition returns -1 its an epsilon transition
         #  we need to stop taking in characters and process the lexeme
         while dfsm.Transition(char) is not -1:
@@ -38,25 +45,33 @@ def main():
                 end_of_file = True
             lexeme += char
 
+                        
         # Only unget char if we aren't at EOF
         if not end_of_file:
-            # This "ungets" the last character
-            char = lexeme[-1]
-            lexeme = lexeme[:-1]
-            
+            if len(lexeme) > 1:
+                # This "ungets" the last character
+                char = lexeme[-1]
+                lexeme = lexeme[:-1]
+            # If len(lexeme) is 1 we need to read the next char in the file
+            else:
+                char = source_code.read(1)
+
         # Strips any whitespace we encounter
         while re.match(r'[\s]', char): 
             char = source_code.read(1)
 
-        # IF peeking at the next character returns an
-        # empty string we have reached EOF 
-        if PeekFile(source_code) == '':
+        if char == '':
             end_of_file = True
 
-        tokens.append((dfsm.GetToken(lexeme), dfsm))
+        # If peeking at the next character returns an
+        # empty string we have reached EOF             
+        tokens.append(dfsm.GetToken(lexeme))
 
-    for token, dfsm in tokens:
-        print token.type + ' -- ' + token.lexeme
+    output_file = open(sys.argv[2], 'w')
+    output_file.write('token -- lexeme\n')
+    for token in tokens:
+        output_file.write(token.type + ' -- ' + token.lexeme + '\n')
+    output_file.close()
      
 if __name__ == '__main__':
     main()

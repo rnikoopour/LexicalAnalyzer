@@ -8,3 +8,6 @@ read
 while
 true
 false
+int
+bool
+real
