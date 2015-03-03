@@ -2,7 +2,9 @@
 @mainpage Rat15S Compiler
 
 @section intro_sec Introduction
-This will become a Rat15S compiler.  Currently working on Lexical Analyzer
+This will become a Rat15S compiler.  Currently working on Lexical Analyzer.
+@author Reza Nikoopour
+@author Eric Roe
 '''
 from dfsm import GetIdentifierDFSM, GetNumeralDFSM, GetOperatorSeparatorDFSM
 import re
@@ -14,6 +16,7 @@ def PeekFile(file):
     return peek
 
 def Lexer(dfsm, lexeme):
+    # Gets the token from the DFSM
     return dfsm.GetToken(lexeme)
 
 def main():
