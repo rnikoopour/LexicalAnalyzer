@@ -13,6 +13,9 @@ def PeekFile(file):
     file.seek(-1, 1)
     return peek
 
+def Lexer(dfsm, lexeme):
+    return dfsm.GetToken(lexeme)
+
 def main():
     source_code = open(sys.argv[1], 'r')
 
@@ -64,7 +67,7 @@ def main():
             end_of_file = True
 
         # We don't want to add comments to the token list
-        token = dfsm.GetToken(lexeme)
+        token = Lexer(dfsm, lexeme)
         if token.type is not 'Comment':
             tokens.append(token)
 
